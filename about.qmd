@@ -1,0 +1,15 @@
+---
+title: "About"
+---
+
+# Educatioal Background 
+
+I graduated from Lake Forest College with a bachelor's in biochemistry, molecular biology, and mathematics. During my undergraduate degree, I conducted research in molecular genetics. I worked in Karen Kirk Lab starting the summer of my first year. During my junior year, I started working on research for my senior thesis titled "*Telomerase Expression Dramatically Increases during Sexual Development.*"  I also attended and presented at multiple ASBMB (American Society of Biochemistry and Molecular Biology) conferences during this time. 
+
+# Educational Goal
+
+While working in genetic research, I often encountered statistical methods used to analyze sequencing data. This helped me discover statistical genomics and genetics and I became more interested in those fields. Therefore, I decided to pursue a Ph.D. in biostatistics. 
+
+# Proffesional Goal 
+
+My professional goal is to develop biomarker identification and risk factor prediction methods by integrating -omics and genetic data. 

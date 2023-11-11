@@ -1,0 +1,209 @@
+---
+title: "Example Analysis"
+bibliography: SPP_Project_1.bib
+---
+
+# Predicting Smoking Status
+
+## Introduction
+
+This analysis aims to predict individuals' smoking status using multiple biochemical and body signal measures. The data set used for this analysis is obtained from Korea's National Health Insurance Service [@noauthor_smoking_nodate; @noauthor_smoking_nodate-1]. This analysis is intended for anyone interested in multinomial classification and prediction problems, especially in healthcare.
+
+## Exploring the Data Set
+
+```{r}
+# Loading Data set
+library(readxl)
+library(readr)
+dataset <- read_csv("smoking_driking_dataset_Ver01.csv", show_col_types = FALSE)
+```
+
+```{r}
+# removing null values 
+library(tidyr)
+dataset <- drop_na(dataset)
+# dimension of the data
+dim(dataset)
+```
+
+The data set includes almost a million observations and twenty-four variables.
+
+```{r message=FALSE, warning=FALSE}
+# Checking if the groups are balanced 
+library(dplyr)
+dataset %>%
+    group_by(SMK_stat_type_cd) %>%
+    tally()
+```
+
+As shown above the groups are not balanced. There are more observations with smoking status 1.
+
+::: callout-note
+Unbalanced groups can affect prediction accuracy.
+:::
+
+To decrease run time, I will work on a sample of the data.
+
+```{r}
+# sampling 10000 observations
+data_small <- sample_n(dataset, 10000)
+```
+
+```{r}
+glimpse(data_small)
+```
+
+```{r}
+# Converting DRK_YN  to numeric
+data_small <- data_small %>% 
+  mutate(DRK_YN = ifelse(DRK_YN=="Y",1,0))
+```
+
+The table below displays the data dictionary[@noauthor_data_nodate; @noauthor_smoking_nodate-1].
+
+```{r message=FALSE}
+knitr::include_graphics("datadictionary.png")
+```
+
+```{r}
+# looking for correlated variables 
+library(corrplot)
+corrplot(cor(as.matrix(data_small[-c(1,23)])))
+```
+
+As the correlation plot depicts, the variables `LDL_chole` and `tot_chole`, `DBP` and `SBP`, and `SGOT_ALT` and `SGOT_AST` are highly correlated. Therefore, one of each pair will be excluded when fitting the prediction model.
+
+::: column-margin
+Highly correlated predictors can increase a model's variance . A change in one variable will cause a change in another; therefore, small changes in the data might cause significant changes in the model and, thus, any predictions made using the model[@sonderegger_correlated_2020].
+:::
+
+```{r}
+# removing correlated predictors
+data_small <- select(data_small, -c('LDL_chole','SGOT_ALT','SBP'))
+```
+
+## Visualizing the data
+
+Before fitting a model, I will visualize the data. Since there are over twenty predictors, only a fraction will be visualized.
+
+```{r}
+# relationship between age,weight,and smoking status by sex
+library(ggplot2)
+ggplot(data_small, aes(x=age , y= weight,col= SMK_stat_type_cd )) +
+  geom_count(alpha = .7) + 
+  facet_wrap(~sex, ncol=1) +
+  labs(title = "Figure 1: Smoking Status Distribition",
+       subtitle = "Based on Age and Weight",
+       color = " Smoking State", caption = " In the legend,  1 =  never smoking, 
+       2= used to smoke but quit, and 3 = still smoking.") +
+  xlab("Age(in 5 year increments)") +
+  ylab("Weight(kg)") +
+  theme_minimal() 
+```
+
+The plot above shows that more male than female smokers are represented in the data set. Furthermore, in both sexes, smokers are concentrated between the ages of 20 and 60.
+
+The distribution of smokers can also be visualized by the bar graph bellow.
+
+```{r}
+#  distribution of smoking state by sex
+ggplot(data_small, aes(x= SMK_stat_type_cd)) +
+  geom_bar( fill= "lightblue") + 
+  facet_wrap(~sex, ncol=1) +
+  labs(title = "Figure 2: Smoking Status Distribition",
+       subtitle = "Among Female and Male.",
+        caption = " In the legend,  1 =  never smoking, 
+       2= used to smoke but quit, and 3 = still smoking.") +
+  xlab("Smoking State") +
+  ylab("Count") +
+  theme_minimal()
+
+```
+
+```{r message=FALSE, warning=FALSE}
+# visualizing the relationship between hemaglobin levels and smoking status by sex
+ggplot(data_small, aes(x= SMK_stat_type_cd, y= hemoglobin )) +
+  geom_jitter(alpha = 0.7,color = "lightblue") + 
+  facet_wrap(~sex, ncol=1) +
+  labs(title = "Figure 3 :Smoking Status Distribition",
+       subtitle = "Based on Hemoglobin levels",
+      caption = " 1 =  never smoking, 
+       2= used to smoke but quit, and 3 = still smoking.") +
+  xlab("Smoking State") +
+  ylab("Hemaglobin Level(g/dl )") +
+  theme_minimal() 
+```
+
+::: callout-note
+Figures two and three both show that the classes of smokers are not balanced. As mentioned previously this might affect the prediction model.
+:::
+
+## Fitting a model: Logistic regression
+
+**Training and Test Set**
+
+```{r}
+# Splitting the data into 80% training and 20% testing set
+set.seed(1)
+s <- sample(c(TRUE, FALSE), nrow(data_small), replace=TRUE, prob=c(0.8,0.2))
+train  <- data_small[s, ]
+test   <- data_small[!s, ]
+```
+
+```{r}
+# Checking dimensions
+dim(train)
+```
+
+```{r}
+# Checking dimensions
+dim(test)
+```
+
+```{r}
+# Fitting a logistic regression model
+library(nnet)
+model <- multinom(SMK_stat_type_cd~. , data=data_small)
+summary(model)
+```
+
+```{r}
+# obtaining estimated probabilities 
+probablities <- fitted(model)
+# making predictions
+predictions <- predict(object=model, newdata=test, type="class")
+# Confusion matrix 
+confusion_matrix <- table(Predicted= predictions,
+                   True=test$SMK_stat_type_cd)
+confusion_matrix
+```
+
+::: callout-note
+The model is more accurate in predicting the smoking status of individuals in Group 1(never smoking). The difference in prediction accuracy among the three groups is partly because of the class imbalance.
+:::
+
+```{r}
+# Test Error
+test_error <- mean(predictions!= test$SMK_stat_type_cd )
+test_error
+```
+
+The model has an $31.76\%$ testing classification error rate.\
+
+```{r}
+# Calculating accuracy of the method 
+round((sum(diag(confusion_matrix))/sum(confusion_matrix))*100,2)
+```
+
+The model has an $68.23\%$ overall classification accuracy.\
+
+## Summary
+
+In this analysis, logistic regression was used to predict the smoking status of individuals using biochemical and body signal measures. The model's prediction accuracy was $68.23\%$, and the testing classification error rate was $31.76\%$. The prediction accuracy could be increased by fitting a logistic regression model using a balanced training set. Other classification techniques such as lasso, discriminant analysis, or tree-based methods could also be employed to develop a model with better prediction accuracy.
+
+### List of functions
+
+`dplyr` - `sample_n()`, `glimpse()`, `group_by()`, `tally()`, `select()`, `mutate()`   `tidyr` - `drop_na()`\
+`ggplot` - `geom_count()`, `geom_bar()`, `geom_jitter()`, `facet_wrap()`\
+`corrplot` - `corrplot()`\
+`nnet` - `multinom()`\

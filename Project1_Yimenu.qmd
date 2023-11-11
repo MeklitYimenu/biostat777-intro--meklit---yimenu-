@@ -1,0 +1,73 @@
+---
+title: "Project 1"
+format: html
+editor: visual
+author: "Meklit Yimenu"
+---
+
+## Part 1
+
+Link to GitHub Repository: <https://github.com/MeklitYimenu/biostat777-intro--meklit---yimenu-.git>
+
+## Part 2
+
+**Question: What is your goal?**
+
+I have two related research goals. One is to I especially want to contribute to integrating -omics data( such as genomic, transcriptomic, epigenomic, etc.) with genetic data (such as GWAS ). Such integration would aim to detect whether genetic variants identified as bio-markers affect gene expression, gene regulation, and cellular metabolism and how these effects relate to phenotype.
+
+My second goal is to use genetic and genomic data obtained from diverse populations. I am passionate about the representation of diverse communities in medical and healthcare research. Thus, using data from diverse populations in my research is important to me. Furthermore, a data analysis method developed using a homogeneous population might be universally effective because different populations have different genetic variations.
+
+Regarding my long-term goal, I wish to contribute to statistical risk factor estimation methods for diseases with multiple bio-markers, especially cancer. I also want to collaborate with other researchers in diverse fields such as environmental health, health policy, and social sciences to incorporate social determinants of health with the risk factor prediction method.
+
+## Part 3
+
+Link to repository:<https://github.com/MeklitYimenu/biostat777-intro--meklit---yimenu-.git>
+
+Link to Website: <https://meklityimenu.quarto.pub/statprogramming2023_meklityimenu_project1/exanalysis.html>
+
+## Part * 4
+
+### Question 1
+```{bash}
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+
+```{bash}
+wget http://raw.githubusercontent.com/stephaniehicks/jhustatprogramming2023/main/data/SRR1039508_subset_1.fastq
+wget http://raw.githubusercontent.com/stephaniehicks/jhustatprogramming2023/main/data/SRR1039509_subset_1.fastq
+wget http://raw.githubusercontent.com/stephaniehicks/jhustatprogramming2023/main/data/SRR1039512_subset_1.fastq
+wget http://raw.githubusercontent.com/stephaniehicks/jhustatprogramming2023/main/data/SRR1039513_subset_1.fastq
+```
+
+### Question 2
+```{bash}
+mkdir - raw_data/fastq
+```
+
+### Question 3
+```{bash}
+mv *.fastq raw_data/fastq
+```
+
+### Question 4
+```{bash}
+cd raw_data/fastq
+ls *51*
+```
+
+### Question 5
+```{bash}
+grep -B2 -A4 --color NNNN SRR1039512_subset_1.fastq 
+```
+
+### Question 6
+```{bash}
+cd raw_data/fastq
+for file in ls *.fastq 
+do 
+head -n 1000 $file | grep -w -c @ $file
+done
+```
+
+
